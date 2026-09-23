@@ -74,9 +74,9 @@ before the previous one's checkboxes are all confirmed.
 
 ## Phase 8 — Serving
 
-- [ ] `api/main.py` — `GET /events`, `GET /events/{event_id}/impacts`
-- [ ] `dashboard/app.py` — Streamlit per `design.md` layout
-- [ ] **Verify:** click through all 2-3 demo events end to end in the dashboard;
+- [x] `api/main.py` — `GET /events`, `GET /events/{event_id}/impacts`
+- [x] `dashboard/app.py` — Streamlit per `design.md` layout
+- [x] **Verify:** click through all 2-3 demo events end to end in the dashboard;
       no missing/null data at any stage
 
 ## Phase 9 — Demo readiness
