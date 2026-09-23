@@ -1,10 +1,14 @@
 """Streamlit Dashboard (Phase 8)."""
 
+import os
+import html
 import streamlit as st
 import requests
 import pandas as pd
+from dotenv import load_dotenv
 
-API_URL = "http://localhost:8000"
+load_dotenv()
+API_URL = os.getenv("API_URL", "http://localhost:8000")
 
 # Color mappings
 COLORS = {
@@ -40,7 +44,8 @@ def fetch_impacts(event_id):
 
 def format_label(label: str) -> str:
     color = COLORS.get(label.lower(), "#9AA0AC")
-    return f"<span style='color: {color}; font-weight: bold;'>{label.upper()}</span>"
+    safe_label = html.escape(label.upper())
+    return f"<span style='color: {color}; font-weight: bold;'>{safe_label}</span>"
 
 events = fetch_events()
 
@@ -76,7 +81,7 @@ if not entities:
 
 # Badges for entities
 entity_names = [e["canonical_name"] for e in entities]
-badges = " ".join([f"<span style='background-color: #2F9E8F; color: white; padding: 4px 8px; border-radius: 4px; margin-right: 8px;'>{name}</span>" for name in entity_names])
+badges = " ".join([f"<span style='background-color: #2F9E8F; color: white; padding: 4px 8px; border-radius: 4px; margin-right: 8px;'>{html.escape(name)}</span>" for name in entity_names])
 st.markdown(f"**Entities Affected:** <br/> {badges}", unsafe_allow_html=True)
 st.markdown("---")
 
