@@ -44,11 +44,11 @@ before the previous one's checkboxes are all confirmed.
 
 ## Phase 5 — Entities
 
-- [ ] `entities/entity_dict.json` — curated ~15-20 entity list with Hindi + English
+- [x] `entities/entity_dict.json` — curated ~15-20 entity list with Hindi + English
       aliases
-- [ ] `entities/extract.py` — IndicNER extraction + dictionary resolution ->
+- [x] `entities/extract.py` — IndicNER extraction + dictionary resolution ->
       `event_entities`
-- [ ] **Verify:** entity matches per event printed and manually judged sensible
+- [x] **Verify:** entity matches per event printed and manually judged sensible
       for the chosen demo events
 
 ## Phase 6 — Impact classification (pilot-gated)

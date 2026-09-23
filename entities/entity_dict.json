@@ -1,1 +1,20 @@
-{}
+[
+  {"canonical_name": "India", "entity_type": "Country", "aliases": ["भारत", "इंडिया", "India", "हिंदुस्तान", "भारतीय"]},
+  {"canonical_name": "United States", "entity_type": "Country", "aliases": ["अमेरिका", "यूएस", "United States", "US", "USA", "संयुक्त राज्य अमेरिका", "अमेरिकी"]},
+  {"canonical_name": "China", "entity_type": "Country", "aliases": ["चीन", "China", "चीनी"]},
+  {"canonical_name": "Russia", "entity_type": "Country", "aliases": ["रूस", "Russia", "रूसी"]},
+  {"canonical_name": "Pakistan", "entity_type": "Country", "aliases": ["पाकिस्तान", "Pakistan", "पाकिस्तानी"]},
+  {"canonical_name": "Japan", "entity_type": "Country", "aliases": ["जापान", "Japan", "जापानी"]},
+  {"canonical_name": "Sensex", "entity_type": "Index", "aliases": ["सेंसेक्स", "Sensex", "BSE Sensex"]},
+  {"canonical_name": "Nifty 50", "entity_type": "Index", "aliases": ["निफ्टी", "Nifty", "Nifty 50"]},
+  {"canonical_name": "Banking Sector", "entity_type": "Sector", "aliases": ["बैंकिंग", "बैंक", "Banking", "Banks"]},
+  {"canonical_name": "IT Sector", "entity_type": "Sector", "aliases": ["आईटी", "IT", "Information Technology", "इंफॉर्मेशन टेक्नोलॉजी"]},
+  {"canonical_name": "Auto Sector", "entity_type": "Sector", "aliases": ["ऑटो", "ऑटोमोबाइल", "Auto", "Automobile"]},
+  {"canonical_name": "Pharma Sector", "entity_type": "Sector", "aliases": ["फार्मा", "दवा", "Pharma", "Pharmaceuticals"]},
+  {"canonical_name": "Energy Sector", "entity_type": "Sector", "aliases": ["ऊर्जा", "एनर्जी", "Energy"]},
+  {"canonical_name": "Real Estate", "entity_type": "Sector", "aliases": ["रियल एस्टेट", "प्रॉपर्टी", "Real Estate"]},
+  {"canonical_name": "FMCG Sector", "entity_type": "Sector", "aliases": ["एफएमसीजी", "FMCG"]},
+  {"canonical_name": "Metal Sector", "entity_type": "Sector", "aliases": ["मेटल", "धातु", "Metals"]},
+  {"canonical_name": "Reserve Bank of India", "entity_type": "Institution", "aliases": ["आरबीआई", "रिजर्व बैंक", "RBI", "Reserve Bank", "भारतीय रिजर्व बैंक"]},
+  {"canonical_name": "Election Commission of India", "entity_type": "Institution", "aliases": ["चुनाव आयोग", "ईसीआई", "ECI", "निर्वाचन आयोग", "Election Commission"]}
+]
