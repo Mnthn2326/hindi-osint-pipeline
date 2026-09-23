@@ -1,0 +1,27 @@
+# Pinned exactly per docs/tech_stack.md — do not change without team review.
+# Python 3.11 required.
+
+# --- Ingestion ---
+feedparser==6.0.11
+praw==7.8.1
+python-dotenv==1.0.1
+
+# --- Database ---
+psycopg2-binary==2.9.9
+sqlalchemy==2.0.36
+alembic==1.14.0
+
+# --- NLP / ML ---
+transformers==5.9.0
+sentence-transformers==5.2.3
+torch==2.5.1
+umap-learn==0.5.7
+hdbscan==0.8.40
+langdetect==1.0.9
+fasttext-wheel==0.9.2
+
+# --- Backend / Serving ---
+fastapi==0.136.3
+uvicorn==0.32.1
+pydantic==2.9.2
+streamlit==1.57.0
