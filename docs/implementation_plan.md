@@ -26,10 +26,10 @@ before the previous one's checkboxes are all confirmed.
 
 ## Phase 3 — Preprocessing
 
-- [ ] `cleaned_text` and `status` columns added to `raw_posts`
-- [ ] `preprocessing/clean.py` — cleanup + language-ID filter (Hindi / code-mixed
+- [x] `cleaned_text` and `status` columns added to `raw_posts`
+- [x] `preprocessing/clean.py` — cleanup + language-ID filter (Hindi / code-mixed
       kept, others marked `skipped` not deleted)
-- [ ] **Verify:** count of kept vs skipped printed; 5 kept rows manually spot-checked
+- [x] **Verify:** count of kept vs skipped printed; 5 kept rows manually spot-checked
       for readable Devanagari text
 
 ## Phase 4 — Event detection
