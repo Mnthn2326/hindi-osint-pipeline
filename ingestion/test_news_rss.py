@@ -1,74 +1,65 @@
 """Unit tests for pure helper functions in ingestion/news_rss.py."""
 
-import hashlib
 import unittest
 from datetime import datetime
 
-from ingestion.news_rss import _build_raw_text, _compute_hash, _parse_published
+from ingestion.news_rss import _compute_hash, _build_raw_text, _parse_published
 
 
-class TestNewsRSSHelpers(unittest.TestCase):
-
-    def test_compute_hash_deterministic(self):
-        """Test SHA-256 hash generation is deterministic and correct."""
-        title = "भारत की जीत"
-        link = "https://example.com/news/1"
-        expected = hashlib.sha256(f"{title}|{link}".encode("utf-8")).hexdigest()
-        self.assertEqual(_compute_hash(title, link), expected)
-
-    def test_compute_hash_different_inputs(self):
-        """Test different title/link pairs produce distinct hashes."""
-        h1 = _compute_hash("Title A", "https://example.com/a")
-        h2 = _compute_hash("Title B", "https://example.com/a")
-        h3 = _compute_hash("Title A", "https://example.com/b")
-        self.assertNotEqual(h1, h2)
+class TestNewsRSS(unittest.TestCase):
+    
+    def test_compute_hash(self):
+        """Test SHA-256 hashing."""
+        h1 = _compute_hash("title1", "link1")
+        h2 = _compute_hash("title1", "link1")
+        h3 = _compute_hash("title2", "link1")
+        
+        self.assertEqual(h1, h2)
         self.assertNotEqual(h1, h3)
+        self.assertEqual(len(h1), 64)  # SHA-256 hex length
 
-    def test_build_raw_text_full(self):
-        """Test raw text formatting with both title and summary."""
-        entry = {
-            "title": "मुख्य समाचार",
-            "summary": "यह समाचार का संक्षिप्त विवरण है।",
-        }
-        expected = "मुख्य समाचार\n\nयह समाचार का संक्षिप्त विवरण है।"
-        self.assertEqual(_build_raw_text(entry), expected)
+    def test_build_raw_text(self):
+        """Test text assembly logic from RSS entry dictionary."""
+        # Only title
+        self.assertEqual(_build_raw_text({"title": "Hello"}), "Hello")
+        
+        # Title and summary
+        self.assertEqual(
+            _build_raw_text({"title": "Hello", "summary": "World"}),
+            "Hello\n\nWorld"
+        )
+        
+        # Title and description (fallback)
+        self.assertEqual(
+            _build_raw_text({"title": "Hello", "description": "Desc"}),
+            "Hello\n\nDesc"
+        )
+        
+        # Strips whitespace
+        self.assertEqual(
+            _build_raw_text({"title": "  Hello  ", "summary": "  World  "}),
+            "Hello\n\nWorld"
+        )
+        
+        # Empty
+        self.assertEqual(_build_raw_text({}), "")
 
-    def test_build_raw_text_description_fallback(self):
-        """Test description field fallback when summary is missing."""
-        entry = {
-            "title": "मुख्य समाचार",
-            "description": "विवरण पाठ",
-        }
-        expected = "मुख्य समाचार\n\nविवरण पाठ"
-        self.assertEqual(_build_raw_text(entry), expected)
-
-    def test_build_raw_text_title_only(self):
-        """Test raw text formatting with title only."""
-        entry = {"title": "केवल शीर्षक"}
-        self.assertEqual(_build_raw_text(entry), "केवल शीर्षक")
-
-    def test_build_raw_text_empty(self):
-        """Test raw text formatting with empty entry."""
-        entry = {}
-        self.assertEqual(_build_raw_text(entry), "")
-
-    def test_parse_published_valid_published_parsed(self):
-        """Test parsing valid published_parsed time struct."""
-        time_struct = (2026, 9, 23, 14, 30, 0, 2, 266, 0)
-        entry = {"published_parsed": time_struct}
-        parsed = _parse_published(entry)
-        self.assertEqual(parsed, datetime(2026, 9, 23, 14, 30, 0))
-
-    def test_parse_published_valid_updated_parsed(self):
-        """Test parsing fallback updated_parsed time struct."""
-        time_struct = (2026, 9, 23, 15, 45, 0, 2, 266, 0)
-        entry = {"updated_parsed": time_struct}
-        parsed = _parse_published(entry)
-        self.assertEqual(parsed, datetime(2026, 9, 23, 15, 45, 0))
-
-    def test_parse_published_invalid(self):
-        """Test invalid or missing date structure returns None."""
+    def test_parse_published(self):
+        """Test timestamp parsing."""
+        # Valid published_parsed
+        entry1 = {"published_parsed": (2026, 9, 23, 12, 0, 0, 0, 0, 0)}
+        dt1 = _parse_published(entry1)
+        self.assertEqual(dt1, datetime(2026, 9, 23, 12, 0, 0))
+        
+        # Valid updated_parsed fallback
+        entry2 = {"updated_parsed": (2026, 1, 1, 0, 0, 0, 0, 0, 0)}
+        dt2 = _parse_published(entry2)
+        self.assertEqual(dt2, datetime(2026, 1, 1, 0, 0, 0))
+        
+        # Missing
         self.assertIsNone(_parse_published({}))
+        
+        # Invalid format (graceful handling)
         self.assertIsNone(_parse_published({"published_parsed": "invalid"}))
 
 

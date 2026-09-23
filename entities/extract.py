@@ -61,6 +61,22 @@ def sync_entity_dict(session) -> dict:
     return alias_to_id
 
 
+def resolve_entity(word: str, alias_map: dict) -> int | None:
+    """Resolve an extracted word to an entity ID using exact or substring matching."""
+    word_lower = word.lower()
+
+    # 1. Exact string match on aliases
+    if word_lower in alias_map:
+        return alias_map[word_lower]
+        
+    # 2. Substring match
+    # Resolves if full/partial alias appears as a substring of the extracted span or vice versa
+    for alias, eid in alias_map.items():
+        if word_lower in alias or alias in word_lower:
+            return eid
+            
+    return None
+
 def process_batch():
     session = SessionLocal()
     try:
@@ -116,23 +132,10 @@ def process_batch():
                         if not word:
                             continue
 
-                        word_lower = word.lower()
-                        matched = False
-
-                        # 1. Exact string match on aliases
-                        if word_lower in alias_map:
-                            matched_entity_ids.add(alias_map[word_lower])
-                            matched = True
+                        eid = resolve_entity(word, alias_map)
+                        if eid is not None:
+                            matched_entity_ids.add(eid)
                         else:
-                            # 2. Substring match
-                            # Resolves if full/partial alias appears as a substring of the extracted span or vice versa
-                            for alias, eid in alias_map.items():
-                                if word_lower in alias or alias in word_lower:
-                                    matched_entity_ids.add(eid)
-                                    matched = True
-                                    break
-
-                        if not matched:
                             # Log unmatched mentions per requirements
                             logger.debug("Unmatched entity mention: '%s'", word)
 
