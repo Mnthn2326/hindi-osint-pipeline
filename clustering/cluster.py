@@ -23,7 +23,15 @@ from sklearn.metrics.pairwise import cosine_similarity
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
-from db.models import Event, EventPostMap, RawPost, SessionLocal
+from db.models import (
+    Event, 
+    EventEntity, 
+    EventEntityConsensus, 
+    EventEntityImpact, 
+    EventPostMap, 
+    RawPost, 
+    SessionLocal
+)
 
 logging.basicConfig(
     level=logging.INFO,
@@ -54,14 +62,20 @@ def process_batch() -> None:
 
     logger.info("Loaded %d embeddings.", len(post_ids))
 
+    n_neighbors = UMAP_N_NEIGHBORS
+    if len(post_ids) - 1 < UMAP_N_NEIGHBORS:
+        # UMAP requires n_neighbors >= 2
+        n_neighbors = max(2, min(UMAP_N_NEIGHBORS, len(post_ids) - 1))
+        logger.info("Reduced UMAP n_neighbors to %d due to small dataset.", n_neighbors)
+
     logger.info(
         "Running UMAP (n_neighbors=%d, n_components=%d)...",
-        UMAP_N_NEIGHBORS,
+        n_neighbors,
         UMAP_N_COMPONENTS,
     )
     # Cosine metric works best for SBERT embeddings
     reducer = umap.UMAP(
-        n_neighbors=UMAP_N_NEIGHBORS,
+        n_neighbors=n_neighbors,
         n_components=UMAP_N_COMPONENTS,
         metric="cosine",
         random_state=42,
@@ -90,8 +104,11 @@ def process_batch() -> None:
 
     session = SessionLocal()
     try:
-        # Idempotency: wipe existing clusters
-        logger.info("Clearing existing events for batch re-clustering...")
+        # Idempotency: wipe existing clusters and explicitly clear downstream rows
+        logger.info("Clearing existing events and their downstream entities/impacts for batch re-clustering...")
+        session.query(EventEntityConsensus).delete()
+        session.query(EventEntityImpact).delete()
+        session.query(EventEntity).delete()
         session.query(EventPostMap).delete()
         session.query(Event).delete()
         session.commit()
