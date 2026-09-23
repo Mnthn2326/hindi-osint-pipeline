@@ -65,11 +65,11 @@ before the previous one's checkboxes are all confirmed.
 
 ## Phase 7 — Consensus (core contribution)
 
-- [ ] `consensus/aggregate.py` — majority vote + entropy-based disagreement score
+- [x] `consensus/aggregate.py` — majority vote + entropy-based disagreement score
       -> `event_entity_consensus`
-- [ ] `consensus/test_aggregate.py` — unit tests: all-agree -> score ~0, 50/50 split
+- [x] `consensus/test_aggregate.py` — unit tests: all-agree -> score ~0, 50/50 split
       -> high score, 3-way split -> high score
-- [ ] **Verify:** all unit tests pass; run against real classified data; scores
+- [x] **Verify:** all unit tests pass; run against real classified data; scores
       in [0,1]; at least one entity across demo events shows meaningful disagreement
 
 ## Phase 8 — Serving
