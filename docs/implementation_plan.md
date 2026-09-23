@@ -34,9 +34,9 @@ before the previous one's checkboxes are all confirmed.
 
 ## Phase 4 — Event detection
 
-- [ ] `clustering/embed.py` — IndicSBERT embeddings for kept posts, stored as
+- [x] `clustering/embed.py` — IndicSBERT embeddings for kept posts, stored as
       numpy files keyed by `post_id`
-- [ ] **Verify (embed):** cosine similarity sanity check — manually-similar posts
+- [x] **Verify (embed):** cosine similarity sanity check — manually-similar posts
       score high, unrelated posts score low
 - [ ] `clustering/cluster.py` — UMAP + HDBSCAN, writes `events` and `event_post_map`
 - [ ] **Verify (cluster):** run against chosen demo-event data; cluster count is
