@@ -4,13 +4,14 @@ Reads raw_posts where status='pending' and cleaned_text is NULL.
 - Strips HTML and normalizes whitespace.
 - Dedupes near-identical text (exact match after cleaning).
 - Runs language ID (langdetect).
-- Keeps only Hindi / Hindi-English code-mixed rows (status='processed').
-- Marks others as status='skipped'.
+- Keeps only Hindi / Hindi-English code-mixed rows (status='kept').
+- Marks others as status='skipped_non_hindi', 'skipped_duplicate', etc.
 
 Usage:
     python -m preprocessing.clean
 """
 
+import hashlib
 import html
 import logging
 import re
@@ -28,6 +29,11 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 DEVANAGARI_REGEX = re.compile(r"[\u0900-\u097F]")
+
+
+def _compute_cleaned_hash(text: str) -> str:
+    """SHA-256 hash of cleaned text for deduplication."""
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
 def clean_text(raw_text: str) -> str:
@@ -79,13 +85,8 @@ def process_batch() -> None:
 
         logger.info("Fetched %d pending posts.", len(posts))
 
-        # We will dedupe across this batch and any existing processed text
-        # To scale, we'd query existing cleaned_text hashes. For MVP, we load
-        # existing processed texts into a set.
-        existing_cleaned = session.query(RawPost.cleaned_text).filter(
-            RawPost.status == "kept"
-        ).all()
-        seen_texts: Set[str] = {row[0] for row in existing_cleaned if row[0]}
+        # We keep track of hashes within the current batch
+        seen_hashes_in_batch: Set[str] = set()
 
         kept_count = 0
         skipped_count = 0
@@ -98,7 +99,19 @@ def process_batch() -> None:
                 skipped_count += 1
                 continue
                 
-            if cleaned in seen_texts:
+            cleaned_hash = _compute_cleaned_hash(cleaned)
+            
+            if cleaned_hash in seen_hashes_in_batch:
+                post.status = "skipped_duplicate"
+                skipped_count += 1
+                continue
+                
+            # DB-level dedup check for previously kept posts
+            existing = session.query(RawPost.post_id).filter(
+                RawPost.cleaned_text_hash == cleaned_hash
+            ).first()
+            
+            if existing:
                 post.status = "skipped_duplicate"
                 skipped_count += 1
                 continue
@@ -110,8 +123,9 @@ def process_batch() -> None:
                 
             # If we passed all checks, mark as kept
             post.cleaned_text = cleaned
+            post.cleaned_text_hash = cleaned_hash
             post.status = "kept"
-            seen_texts.add(cleaned)
+            seen_hashes_in_batch.add(cleaned_hash)
             kept_count += 1
 
         # Commit batch per rules.md §3
