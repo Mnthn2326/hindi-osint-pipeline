@@ -20,9 +20,9 @@ before the previous one's checkboxes are all confirmed.
 
 ## Phase 2 — Ingestion
 
-- [ ] News RSS connector (`ingestion/news_rss.py`) — fetch, hash, dedupe, insert
+- [x] News RSS connector (`ingestion/news_rss.py`) — fetch, hash, dedupe, insert
 - [ ] Reddit connector (`ingestion/reddit.py`) — same pattern
-- [ ] Confirmed: Reddit API app registered, working Hindi news RSS feed list assembled
+- [x] Confirmed: Reddit API app registered, working Hindi news RSS feed list assembled
       (do this BEFORE writing connector code, not during)
 - [ ] **Verify:** run both against real sources; rows appear in `raw_posts`;
       rerunning does not duplicate rows
