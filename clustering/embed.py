@@ -10,7 +10,7 @@ import argparse
 import logging
 import os
 from pathlib import Path
-from typing import Tuple
+from typing import Tuple, Optional
 
 import numpy as np
 
@@ -27,7 +27,7 @@ EMBEDDINGS_FILE = os.path.join("clustering", "embeddings.npz")
 BATCH_SIZE = 32
 
 
-def load_existing_embeddings() -> Tuple[np.ndarray, np.ndarray]:
+def load_existing_embeddings() -> Tuple[np.ndarray, Optional[np.ndarray]]:
     """Load existing post_ids and embeddings from disk if available."""
     if os.path.exists(EMBEDDINGS_FILE):
         try:
@@ -35,7 +35,7 @@ def load_existing_embeddings() -> Tuple[np.ndarray, np.ndarray]:
             return data["post_ids"], data["embeddings"]
         except Exception as exc:
             logger.warning("Failed to load existing embeddings, starting fresh: %s", exc)
-    return np.array([]), np.empty((0, 768))  # Default SBERT embedding dim
+    return np.array([]), None
 
 
 def save_embeddings(post_ids: np.ndarray, embeddings: np.ndarray) -> None:
@@ -70,6 +70,13 @@ def process_batch() -> None:
 
         if not to_embed:
             logger.info("All posts are already embedded.")
+            if existing_embeds is None:
+                logger.info("No existing embeddings and no posts to embed. Inferring model dim...")
+                from sentence_transformers import SentenceTransformer
+                model = SentenceTransformer(MODEL_NAME)
+                dim = model.get_sentence_embedding_dimension()
+                existing_embeds = np.empty((0, dim))
+                save_embeddings(existing_ids, existing_embeds)
             return
 
         logger.info("Need to generate embeddings for %d new posts.", len(to_embed))
@@ -92,8 +99,22 @@ def process_batch() -> None:
             new_texts, batch_size=BATCH_SIZE, show_progress_bar=True
         )
 
+        if existing_embeds is None:
+            # Infer shape from the first batch of new_embeds
+            dim = new_embeds.shape[1]
+            existing_embeds = np.empty((0, dim))
+
         # Merge with existing
         if len(existing_ids) > 0:
+            if existing_embeds.shape[1] != new_embeds.shape[1]:
+                logger.error(
+                    "Shape mismatch: existing embeddings have dimension %d, but new model generated dimension %d.",
+                    existing_embeds.shape[1], new_embeds.shape[1]
+                )
+                raise ValueError(
+                    f"Embedding dimension mismatch: {existing_embeds.shape[1]} vs {new_embeds.shape[1]}"
+                )
+                
             final_ids = np.concatenate([existing_ids, new_ids])
             final_embeds = np.concatenate([existing_embeds, new_embeds])
         else:
