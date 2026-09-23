@@ -63,6 +63,7 @@ class RawPost(Base):
     source_type: str = Column(String, nullable=False)
     raw_text: str = Column(Text, nullable=False)
     cleaned_text: Optional[str] = Column(Text, nullable=True)
+    cleaned_text_hash: Optional[str] = Column(String, nullable=True, index=True)
     status: str = Column(String, nullable=False, default="pending", index=True)
     published_at: Optional[datetime] = Column(DateTime, nullable=True)
     content_hash: str = Column(String, nullable=False, unique=True)

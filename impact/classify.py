@@ -75,7 +75,7 @@ def process_batch() -> None:
     logger.info("Classifying %d event-entity pairs...", len(pairs))
 
     try:
-        for ee in pairs:
+        for idx, ee in enumerate(pairs, 1):
             entity = session.query(Entity).filter_by(entity_id=ee.entity_id).first()
             if not entity:
                 continue
@@ -99,7 +99,7 @@ def process_batch() -> None:
             try:
                 # pipeline accepts lists and returns list of dicts
                 results = classifier(
-                    texts, candidate_labels, hypothesis_template=template
+                    texts, candidate_labels, hypothesis_template=template, batch_size=8
                 )
             except Exception as e:
                 # Catch per-item inference failures without crashing the batch
@@ -109,7 +109,11 @@ def process_batch() -> None:
             if isinstance(results, dict):
                 results = [results]
 
+            seen_sources = set()
             for post, res in zip(linked_posts, results):
+                if post.source_id in seen_sources:
+                    continue
+                seen_sources.add(post.source_id)
                 best_label = res["labels"][0]
                 confidence = res["scores"][0]
 
@@ -123,6 +127,10 @@ def process_batch() -> None:
                 )
                 session.add(impact)
                 total_impacts += 1
+
+            if idx % 5 == 0 or idx == len(pairs):
+                session.commit()
+                logger.info("Processed %d/%d pairs (%d impacts recorded)...", idx, len(pairs), total_impacts)
 
         session.commit()
         logger.info("Successfully saved %d impact classification rows.", total_impacts)
