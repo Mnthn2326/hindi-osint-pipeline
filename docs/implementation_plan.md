@@ -53,8 +53,8 @@ before the previous one's checkboxes are all confirmed.
 
 ## Phase 6 — Impact classification (pilot-gated)
 
-- [ ] `impact/pilot_test.py` — zero-shot NLI on 5 hand-picked (event, entity) pairs
-- [ ] **GATE:** manually check all 5 predictions. If 3+ are wrong or the model
+- [x] `impact/pilot_test.py` — zero-shot NLI on 5 hand-picked (event, entity) pairs
+- [x] **GATE:** manually check all 5 predictions. If 3+ are wrong or the model
       fails on Hindi text, STOP — do not proceed to the full pipeline. Report back
       for a fallback classifier decision (rule-based or few-shot LLM) before
       continuing.
