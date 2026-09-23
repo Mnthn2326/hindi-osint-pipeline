@@ -83,7 +83,7 @@ def process_batch() -> None:
         # To scale, we'd query existing cleaned_text hashes. For MVP, we load
         # existing processed texts into a set.
         existing_cleaned = session.query(RawPost.cleaned_text).filter(
-            RawPost.status == "processed"
+            RawPost.status == "kept"
         ).all()
         seen_texts: Set[str] = {row[0] for row in existing_cleaned if row[0]}
 
@@ -108,9 +108,9 @@ def process_batch() -> None:
                 skipped_count += 1
                 continue
                 
-            # If we passed all checks, mark as processed
+            # If we passed all checks, mark as kept
             post.cleaned_text = cleaned
-            post.status = "processed"
+            post.status = "kept"
             seen_texts.add(cleaned)
             kept_count += 1
 

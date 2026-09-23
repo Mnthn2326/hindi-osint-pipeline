@@ -38,8 +38,8 @@ before the previous one's checkboxes are all confirmed.
       numpy files keyed by `post_id`
 - [x] **Verify (embed):** cosine similarity sanity check — manually-similar posts
       score high, unrelated posts score low
-- [ ] `clustering/cluster.py` — UMAP + HDBSCAN, writes `events` and `event_post_map`
-- [ ] **Verify (cluster):** run against chosen demo-event data; cluster count is
+- [x] `clustering/cluster.py` — UMAP + HDBSCAN, writes `events` and `event_post_map`
+- [x] **Verify (cluster):** run against chosen demo-event data; cluster count is
       small; representative_text per cluster is coherent on manual read
 
 ## Phase 5 — Entities
