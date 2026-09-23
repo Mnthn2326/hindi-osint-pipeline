@@ -2,7 +2,7 @@
 
 ## 1. What this is
 
-A system that ingests Hindi-language OSINT content (news, Reddit, YouTube), detects
+A system that ingests Hindi-language OSINT content (news, YouTube), detects
 real-world events, identifies which entities (countries, markets, sectors) each event
 affects, classifies the reported impact direction per entity per source, and computes
 a cross-source consensus + disagreement score. Group 18, VIT CSE-AI, guided by
@@ -32,7 +32,7 @@ problem for a semester timeline. Do not let scope drift toward prediction.
 ## 5. MVP scope (current build phase — target 40-50% of full system)
 
 ### In scope
-- Ingestion: News RSS + Reddit only (PRAW, feedparser)
+- Ingestion: News RSS only (feedparser)
 - Preprocessing: text cleanup + language-ID filter (Hindi / Hindi-English code-mixed)
 - Event detection: IndicSBERT embeddings -> UMAP -> HDBSCAN, batch (not streaming)
 - Entity extraction: pretrained IndicNER, no fine-tuning
@@ -45,6 +45,7 @@ problem for a semester timeline. Do not let scope drift toward prediction.
 - Serving: FastAPI (read-only) + Streamlit dashboard
 
 ### Explicitly out of scope for this phase
+- Reddit ingestion (dropped — API now requires manual approval under Responsible Builder Policy)
 - YouTube ingestion
 - OCR (image text) and ASR (video transcription)
 - Any model fine-tuning

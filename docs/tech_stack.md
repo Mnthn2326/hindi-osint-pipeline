@@ -15,7 +15,6 @@ mid-sprint.
 | Package | Version | Purpose |
 |---|---|---|
 | `feedparser` | 6.0.11 | News RSS parsing |
-| `praw` | 7.8.1 | Reddit API client |
 | `python-dotenv` | 1.0.1 | Env var loading for API keys |
 
 ## Database

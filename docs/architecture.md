@@ -3,7 +3,7 @@
 ## 1. Pipeline (linear, stage-decoupled)
 
 ```
-Data Sources (News RSS, Reddit API)
+Data Sources (News RSS)
         |
 Ingestion connectors  -->  raw_posts (Postgres)
         |
@@ -42,9 +42,7 @@ now).
 ```
 /ingestion/
     news_rss.py       # RSS connector
-    reddit.py          # PRAW connector
     config/feeds.json   # RSS feed URLs
-    config/subreddits.json
 /preprocessing/
     clean.py           # cleanup + language-ID filter
 /clustering/

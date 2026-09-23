@@ -31,7 +31,7 @@
 
 ## 3. Error handling
 
-- External API calls (Reddit, RSS fetches) must handle rate-limit and network
+- External API calls (RSS fetches) must handle rate-limit and network
   errors with a retry-with-backoff (max 3 attempts), then log and skip the item
   rather than crashing the whole batch job.
 - Model inference calls (NER, NLI) must catch and log per-item failures without
