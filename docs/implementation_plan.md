@@ -58,9 +58,9 @@ before the previous one's checkboxes are all confirmed.
       fails on Hindi text, STOP — do not proceed to the full pipeline. Report back
       for a fallback classifier decision (rule-based or few-shot LLM) before
       continuing.
-- [ ] `impact/classify.py` — full batch classification -> `event_entity_impact`
+- [x] `impact/classify.py` — full batch classification -> `event_entity_impact`
       (only after pilot gate passes)
-- [ ] **Verify:** run against all demo-event data; spot-check 10 rows manually;
+- [x] **Verify:** run against all demo-event data; spot-check 10 rows manually;
       confirm label distribution is not degenerate
 
 ## Phase 7 — Consensus (core contribution)
