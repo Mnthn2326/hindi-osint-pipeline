@@ -59,6 +59,9 @@ def list_events(db: Session = Depends(get_db)):
     return [{"event_id": e.event_id, "representative_text": e.representative_text} for e in events]
 
 
+from sqlalchemy.orm import joinedload
+from collections import defaultdict
+
 @app.get("/events/{event_id}/impacts", response_model=EventDetailOut)
 def get_event_impacts(event_id: int, db: Session = Depends(get_db)):
     """Get full impact and consensus details for an event."""
@@ -66,21 +69,32 @@ def get_event_impacts(event_id: int, db: Session = Depends(get_db)):
     if not event:
         raise HTTPException(status_code=404, detail="Event not found")
 
-    # Fetch consensus
-    consensus_rows = db.query(EventEntityConsensus).filter(EventEntityConsensus.event_id == event_id).all()
+    # Fetch consensus along with entity in a single query
+    consensus_rows = (
+        db.query(EventEntityConsensus)
+        .options(joinedload(EventEntityConsensus.entity))
+        .filter(EventEntityConsensus.event_id == event_id)
+        .all()
+    )
+    
+    # Fetch all impacts and source texts for this event in a single query
+    all_impacts = (
+        db.query(EventEntityImpact, RawPost.cleaned_text)
+        .join(RawPost, EventEntityImpact.source_id == RawPost.source_id)
+        .filter(EventEntityImpact.event_id == event_id)
+        .all()
+    )
+    
+    # Group impacts by entity_id
+    impacts_by_entity = defaultdict(list)
+    for imp, text in all_impacts:
+        impacts_by_entity[imp.entity_id].append((imp, text))
     
     entities_out = []
     
     for c in consensus_rows:
-        entity = db.query(Entity).filter(Entity.entity_id == c.entity_id).first()
-        
-        # Fetch impacts
-        impacts = db.query(EventEntityImpact, RawPost.cleaned_text).join(
-            RawPost, EventEntityImpact.source_id == RawPost.source_id
-        ).filter(
-            EventEntityImpact.event_id == event_id,
-            EventEntityImpact.entity_id == c.entity_id
-        ).all()
+        entity = c.entity
+        impacts = impacts_by_entity.get(c.entity_id, [])
         
         sources_out = []
         for imp, text in impacts:
