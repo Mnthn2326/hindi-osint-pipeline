@@ -1,8 +1,8 @@
 """Entity extraction and resolution batch job (Phase 5).
 
 Loads entity_dict.json and syncs it to the `entities` DB table.
-Uses ai4bharat/IndicNER to extract entities from event texts.
-Resolves mentions to canonical entity IDs using exact string matching against aliases.
+Uses mirfan899/hindi-roberta-ner to extract entities from event texts.
+Resolves mentions to canonical entity IDs using string matching against aliases.
 Saves matched (event_id, entity_id) pairs into `event_entities`.
 
 Assumption per rules.md §1 (idempotency):
@@ -17,7 +17,7 @@ import sys
 from sqlalchemy.exc import SQLAlchemyError
 from transformers import pipeline
 
-from db.models import Entity, Event, EventEntity, EventPostMap, RawPost, SessionLocal
+from db.models import Entity, Event, EventEntity, EventEntityConsensus, EventEntityImpact, EventPostMap, RawPost, SessionLocal
 
 logging.basicConfig(
     level=logging.INFO,
@@ -65,7 +65,9 @@ def process_batch():
     session = SessionLocal()
     try:
         alias_map = sync_entity_dict(session)
-        logger.info("Clearing existing event_entities for batch run...")
+        logger.info("Clearing existing event_entities and downstream impacts/consensus for batch run...")
+        session.query(EventEntityConsensus).delete()
+        session.query(EventEntityImpact).delete()
         session.query(EventEntity).delete()
         session.commit()
     except Exception as e:
@@ -114,11 +116,23 @@ def process_batch():
                         if not word:
                             continue
 
-                        # Simple resolution via exact string match on aliases
                         word_lower = word.lower()
+                        matched = False
+
+                        # 1. Exact string match on aliases
                         if word_lower in alias_map:
                             matched_entity_ids.add(alias_map[word_lower])
+                            matched = True
                         else:
+                            # 2. Substring match
+                            # Resolves if full/partial alias appears as a substring of the extracted span or vice versa
+                            for alias, eid in alias_map.items():
+                                if word_lower in alias or alias in word_lower:
+                                    matched_entity_ids.add(eid)
+                                    matched = True
+                                    break
+
+                        if not matched:
                             # Log unmatched mentions per requirements
                             logger.debug("Unmatched entity mention: '%s'", word)
 
@@ -131,11 +145,10 @@ def process_batch():
 
             # 3. Store matched entities
             if matched_entity_ids:
-                # Resolve names for cleaner logging
-                resolved_names = [
-                    session.query(Entity.canonical_name).filter_by(entity_id=eid).scalar()
-                    for eid in matched_entity_ids
-                ]
+                # Resolve names in a single query for cleaner logging
+                resolved_entities = session.query(Entity.canonical_name).filter(Entity.entity_id.in_(matched_entity_ids)).all()
+                resolved_names = [row[0] for row in resolved_entities]
+
                 logger.info(
                     "Event %d matched %d entities: %s",
                     event.event_id,
