@@ -17,6 +17,7 @@ from transformers import pipeline
 from db.models import (
     Entity,
     EventEntity,
+    EventEntityConsensus,
     EventEntityImpact,
     EventPostMap,
     RawPost,
@@ -38,13 +39,16 @@ def map_label(hindi_label: str) -> str:
         return "positive"
     elif hindi_label == "नकारात्मक":
         return "negative"
+    elif hindi_label == "तटस्थ":
+        return "neutral"
     return "neutral"
 
 
 def process_batch() -> None:
     session = SessionLocal()
     try:
-        logger.info("Clearing existing event_entity_impact for batch run...")
+        logger.info("Clearing existing event_entity_impact and downstream consensus for batch run...")
+        session.query(EventEntityConsensus).delete()
         session.query(EventEntityImpact).delete()
         session.commit()
     except Exception as e:
@@ -66,6 +70,7 @@ def process_batch() -> None:
 
     total_impacts = 0
     candidate_labels = ["सकारात्मक", "नकारात्मक", "तटस्थ"]
+    posts_by_event = {}
 
     logger.info("Classifying %d event-entity pairs...", len(pairs))
 
@@ -75,12 +80,15 @@ def process_batch() -> None:
             if not entity:
                 continue
 
-            linked_posts = (
-                session.query(RawPost)
-                .join(EventPostMap, EventPostMap.post_id == RawPost.post_id)
-                .filter(EventPostMap.event_id == ee.event_id)
-                .all()
-            )
+            if ee.event_id not in posts_by_event:
+                posts_by_event[ee.event_id] = (
+                    session.query(RawPost)
+                    .join(EventPostMap, EventPostMap.post_id == RawPost.post_id)
+                    .filter(EventPostMap.event_id == ee.event_id)
+                    .all()
+                )
+            
+            linked_posts = posts_by_event[ee.event_id]
 
             if not linked_posts:
                 continue
