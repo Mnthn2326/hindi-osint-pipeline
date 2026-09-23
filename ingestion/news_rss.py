@@ -82,14 +82,17 @@ def fetch_feed(url: str) -> Optional[feedparser.FeedParserDict]:
         try:
             feed = feedparser.parse(url)
             if feed.bozo and feed.bozo_exception:
-                # feedparser sets bozo=1 for malformed feeds; log but proceed
-                # if entries were still parsed
                 logger.warning(
-                    "Feed %s had parse warning (attempt %d): %s",
-                    url, attempt, feed.bozo_exception,
+                    "Feed %s had parse error (attempt %d/%d): %s",
+                    url, attempt, MAX_RETRIES, feed.bozo_exception,
                 )
+                if attempt < MAX_RETRIES:
+                    time.sleep(BACKOFF_BASE ** attempt)
+                continue
+
             if feed.entries:
                 return feed
+
             if attempt < MAX_RETRIES:
                 logger.info(
                     "Feed %s returned 0 entries (attempt %d/%d), retrying...",
@@ -97,8 +100,9 @@ def fetch_feed(url: str) -> Optional[feedparser.FeedParserDict]:
                 )
                 time.sleep(BACKOFF_BASE ** attempt)
                 continue
+
             logger.warning("Feed %s returned 0 entries after %d attempts.", url, MAX_RETRIES)
-            return feed
+            return None
         except Exception as exc:
             logger.error(
                 "Network error fetching %s (attempt %d/%d): %s",
@@ -154,7 +158,7 @@ def ingest_feed(url: str) -> Dict[str, int]:
                 continue
 
             post = RawPost(
-                source_id=link or title,
+                source_id=link or content_hash,
                 source_type="news",
                 raw_text=raw_text,
                 status="pending",
