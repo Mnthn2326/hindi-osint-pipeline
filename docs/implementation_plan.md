@@ -14,9 +14,9 @@ before the previous one's checkboxes are all confirmed.
 
 ## Phase 1 — Database
 
-- [ ] SQLAlchemy models for all 7 tables per `architecture.md` §4
-- [ ] Alembic migration created and applied
-- [ ] **Verify:** all 7 tables exist in Postgres via `\dt`
+- [x] SQLAlchemy models for all 7 tables per `architecture.md` §4
+- [x] Alembic migration created and applied
+- [x] **Verify:** all 7 tables exist in Postgres via `\dt`
 
 ## Phase 2 — Ingestion
 
